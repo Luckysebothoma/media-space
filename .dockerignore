@@ -1,0 +1,12 @@
+.git
+archives
+image_group
+video_group
+input
+processed
+tmp
+**/node_modules
+*.json.bak
+gemini-code-*.json
+.env
+.inventory-*

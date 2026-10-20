@@ -1,0 +1,20 @@
+FROM node:20-bookworm-slim
+ENV DEBIAN_FRONTEND=noninteractive TZ=Africa/Johannesburg \
+    CHROME_BIN=/usr/bin/chromium PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ffmpeg chromium fonts-liberation fonts-noto-color-emoji python3 python3-pip \
+      postgresql-client redis-tools inotify-tools imagemagick jq curl tini ca-certificates tzdata \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY . /app
+RUN mkdir -p /opt/tools && cp /app/*.sh /opt/tools/ 2>/dev/null; chmod +x /opt/tools/* 2>/dev/null; \
+    chmod +x /app/docker/mega-entrypoint.sh
+RUN cd "/app/hybrid-media-studio/api" && (npm ci || npm install) && npm run build --if-present
+RUN cd "/app/hybrid-media-studio/remotion-worker" && (npm ci || npm install) && npm run build --if-present
+RUN cd "/app/ffmpeg-microservice/app" && (npm ci || npm install) && npm run build --if-present
+RUN cd "/app/file_management_stack/media-organizer" && (npm ci || npm install) && npm run build --if-present
+RUN cd "/app/media-convertor-compressor/app" && (npm ci || npm install) && npm run build --if-present
+RUN cd "/app/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app" && (npm ci || npm install) && npm run build --if-present
+ENV INPUT_DIR=/media/input PROCESSED_DIR=/media/processed TMP_DIR=/media/tmp
+ENTRYPOINT ["/usr/bin/tini","--","/app/docker/mega-entrypoint.sh"]

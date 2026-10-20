@@ -1,0 +1,95 @@
+version: "3.8"
+# shm_size is ignored by `docker stack deploy`; the 4 GiB tmpfs on /dev/shm replaces it.
+networks:
+  media_space_net: { external: true, name: media_space_net }
+secrets:
+  pg_admin_pass: { external: true }
+  hms_pass:      { external: true }
+  ffmpeg_pass:   { external: true }
+  media_pass:    { external: true }
+volumes:
+  postgres_data:
+  redis_data:
+  shared_assets:
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      TZ: Africa/Johannesburg
+      PGTZ: Africa/Johannesburg
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_admin_pass
+    secrets: [pg_admin_pass, hms_pass, ffmpeg_pass, media_pass]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ${HOST_DATA_DIR}/sql:/docker-entrypoint-initdb.d:ro
+    networks: [media_space_net]          # no published ports: reachable only on the overlay
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    deploy:
+      replicas: 1
+      placement: { constraints: ["node.hostname == ${PRIMARY_NODE}"] }
+      restart_policy: { condition: any, delay: 5s }
+      resources:
+        limits: { cpus: "2.0", memory: 4G }
+        reservations: { cpus: "0.5", memory: 512M }
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server","--appendonly","yes","--maxmemory","512mb","--maxmemory-policy","allkeys-lru"]
+    environment: { TZ: Africa/Johannesburg }
+    volumes: [ "redis_data:/data" ]
+    networks: [media_space_net]
+    healthcheck: { test: ["CMD","redis-cli","ping"], interval: 10s, timeout: 3s, retries: 5 }
+    deploy:
+      replicas: 1
+      placement: { constraints: ["node.hostname == ${PRIMARY_NODE}"] }
+      restart_policy: { condition: any, delay: 5s }
+      resources:
+        limits: { cpus: "1.0", memory: 768M }
+        reservations: { cpus: "0.1", memory: 128M }
+  i2v-engine:
+    image: ${IMAGE_REF}
+    secrets: [hms_pass, ffmpeg_pass, media_pass]
+    environment:
+      TZ: Africa/Johannesburg
+      NODE_ENV: production
+      APP_PORT: "${APP_PORT}"
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      TMP_RETENTION_DAYS: "${TMP_RETENTION_DAYS}"
+      INPUT_DIR: /media/input
+      PROCESSED_DIR: /media/processed
+      TMP_DIR: /media/tmp
+    ports:
+      - { target: "${APP_PORT}", published: "${APP_PORT}", protocol: tcp, mode: ingress }
+    volumes:
+      - { type: bind,   source: "${HOST_DATA_DIR}/input",     target: /media/input }
+      - { type: bind,   source: "${HOST_DATA_DIR}/processed", target: /media/processed }
+      - { type: bind,   source: "${HOST_DATA_DIR}/tmp",       target: /media/tmp }
+      - { type: volume, source: shared_assets,                target: /app/shared_assets }
+      - { type: tmpfs,  target: /dev/shm, tmpfs: { size: 4294967296 } }
+    networks: [media_space_net]
+    stop_grace_period: 60s
+    healthcheck:
+      test: ["CMD","bash","-c","exec 3<>/dev/tcp/127.0.0.1/${APP_PORT}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    deploy:
+      replicas: ${ENGINE_REPLICAS}
+      placement:
+        max_replicas_per_node: 1
+        constraints: ["${ENGINE_CONSTRAINT}"]
+      update_config: { parallelism: 1, delay: 15s, order: start-first, failure_action: rollback }
+      rollback_config: { parallelism: 1, order: stop-first }
+      restart_policy: { condition: on-failure, delay: 10s, max_attempts: 5, window: 120s }
+      resources:
+        limits: { cpus: "3.0", memory: 12G }
+        reservations: { cpus: "2.0", memory: 4G }

@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  media-organizer:
+    image: 192.168.0.140:5000/media-organizer:latest
+    user: "0:0"
+    ports:
+      - "3000:3000"
+    environment:
+      - TZ="Johannesburg/Africa"
+      - PORT=3000
+      - LOG_DIR=/app/logs
+      - NODE_ENV=production
+      - MEDIA_SOURCE_DIR=${MEDIA_SOURCE_DIR:-/media/input}
+      - MEDIA_OUTPUT_DIR=${MEDIA_OUTPUT_DIR:-/media/processed}
+      - MEDIA_DUMP_DIR=${MEDIA_DUMP_DIR:-/media/dump}
+    volumes:
+      - /mnt/blue_488gb/_ALL_BACKUP_2026/14-bk-cp-images/processed:/media/input
+      - /mnt/ssd_lvm/ffmped_output//processed:/media/processed
+      - /mnt/ssd_lvm/ffmped_output/dump:/media/dump
+      - app_logs:/app/logs
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  media_input:
+    driver: local
+  media_processed:
+    driver: local
+  app_logs:
+    driver: local
+  shared_media:
+    external: true
+  dumps:
+    external: true
+
+networks:
+  default:
+    driver: overlay
+    attachable: true

@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  media-composer:
+    image: 192.168.0.140:5000/media-composer:latest
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4G
+
+    env_file:
+      - .env
+
+    environment:
+      - INPUT_PATH=${INPUT_PATH}
+      - OUTPUT_PATH=${OUTPUT_PATH}
+      - PRESET=${PRESET}
+      - THREADS=${THREADS}
+
+    volumes:
+      - /mnt/blue_442gb/comfyui/generated_i2v/mlavish:/app/archives:rw
+#      - /db-server/Media_Composer_basic:/app:ro
+      - /mnt/blue_442gb/comfyui/088888888888888888888062026uPLOADEDTOmULAVISHI/:/data/input:ro

@@ -1,0 +1,179 @@
+{
+	"info": {
+		"_postman_id": "hms-api-collection-2026",
+		"name": "Hybrid Media Studio API",
+		"description": "API collection for managing media organization and FFmpeg/Remotion processing.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "System",
+			"item": [
+				{
+					"name": "Get Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"status"
+							]
+						},
+						"description": "Returns health check and service connectivity status."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Organiser",
+			"item": [
+				{
+					"name": "Organise Files",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"srcPath\": \"/data/media/imports\",\n    \"granularity\": \"day\",\n    \"mediaType\": \"both\",\n    \"dryRun\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/organise",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"organise"
+							]
+						},
+						"description": "Groups files into folders based on date/time metadata and removes duplicates."
+					},
+					"response": []
+				},
+				{
+					"name": "Scan Directory",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"srcPath\": \"/data/media/raw\",\n    \"mediaType\": \"image\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/scan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"scan"
+							]
+						},
+						"description": "Analyzes a directory and returns file counts and sizes without moving anything."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Processor",
+			"item": [
+				{
+					"name": "Batch Process (FFmpeg)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"srcPath\": \"/data/output/organised/20260511__150mb\",\n    \"preset\": \"standard\",\n    \"threads\": 2,\n    \"muted\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/process",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"process"
+							]
+						},
+						"description": "Starts an FFmpeg batch job to convert image sequences into video."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Jobs",
+			"item": [
+				{
+					"name": "List Jobs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/jobs?limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"jobs"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}

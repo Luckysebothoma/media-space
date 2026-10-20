@@ -1,0 +1,12 @@
+{
+  "name": "hms-remotion-worker",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.3",
+    "remotion": "^4.0.0",
+    "@remotion/renderer": "^4.0.0",
+    "@remotion/media-utils": "^4.0.0"
+  }
+}

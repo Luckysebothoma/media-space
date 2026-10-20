@@ -1,0 +1,50 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: media_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: media_db
+      POSTGRES_USER: media
+      POSTGRES_PASSWORD: media_pass
+    ports:
+      - "5441:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  app:
+    build:
+      context: ./app
+    container_name: media_app
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: media_db
+      PGUSER: media
+      PGPASSWORD: media_pass
+
+      REDIS_HOST: 192.168.0.140
+      REDIS_PORT: 6390
+
+      INPUT_DIR: /media/input
+      OUTPUT_DIR: /media/output
+      DUP_DIR: /media/duplicates
+
+      IMAGE_PROFILE: jpg_q75
+      VIDEO_PROFILE: mp4_h264_crf28
+    volumes:
+      - /mnt/blue_488gb/_ALL_BACKUP_2026/processed:/media/input
+      - /mnt/blue_488gb/_ALL_BACKUP_2026/output:/media/output
+      - /mnt/blue_488gb/_ALL_BACKUP_2026/duplicates:/media/duplicates
+      - /mnt/blue_488gb/_ALL_BACKUP_2026/processed:/media/processed
+      - /mnt/blue_488gb/_ALL_BACKUP_2026/empty_dirs:/media/empty_dirs
+    command: ["node", "src/index.js"]
+
+volumes:
+  pg_data:
+  redis_data:

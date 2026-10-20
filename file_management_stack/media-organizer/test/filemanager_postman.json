@@ -1,0 +1,205 @@
+{
+  "info": {
+    "name": "Media Organizer API",
+    "_postman_id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+    "description": "Media Organizer API v1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://192.168.0.140:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/"
+      }
+    },
+    {
+      "name": "Help",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/help"
+      }
+    },
+    {
+      "name": "Calendar",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/calendar"
+      }
+    },
+    {
+      "name": "Logs - Recent",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/logs/recent?lines=50"
+      }
+    },
+    {
+      "name": "Logs - Errors",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/logs/errors?lines=20"
+      }
+    },
+    {
+      "name": "Scan (Dry Run)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/scan",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"mediaType\": \"both\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Group by Filename (Dry Run)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/filename",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed/by-filename\",\n  \"mediaType\": \"both\",\n  \"dryRun\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Group by Date - Day",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/date",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed/by-day\",\n  \"mediaType\": \"both\",\n  \"granularity\": \"day\",\n  \"dryRun\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Group by Date - Week",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/date",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed/by-week\",\n  \"mediaType\": \"image\",\n  \"granularity\": \"week\",\n  \"dryRun\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "Group by Date - Month",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/date",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed/by-month\",\n  \"mediaType\": \"video\",\n  \"granularity\": \"month\",\n  \"dryRun\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "Group by Hour",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/hour",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed/by-hour\",\n  \"mediaType\": \"both\",\n  \"dryRun\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Flatten Media",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/flatten",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed/flat\",\n  \"mediaType\": \"both\",\n  \"dryRun\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "Separate Media",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/separate",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed\",\n  \"dryRun\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "Find Related Media",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/related",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed/related\",\n  \"dryRun\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Deduplicate (Dry Run)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/deduplicate",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed\",\n  \"mediaType\": \"both\",\n  \"dryRun\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Deduplicate (Execute)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/organize/deduplicate",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sourceDir\": \"/media/input\",\n  \"outputDir\": \"/media/processed\",\n  \"mediaType\": \"both\",\n  \"dryRun\": false\n}"
+        }
+      }
+    }
+  ]
+}

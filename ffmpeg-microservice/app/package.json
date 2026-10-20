@@ -1,0 +1,14 @@
+{
+  "name": "ffmpeg-microservice",
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev":   "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono":              "^4.6.3",
+    "pg":                "^8.13.1"
+  }
+}

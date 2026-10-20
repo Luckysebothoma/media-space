@@ -1,0 +1,88 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: hms_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       hms_db
+      POSTGRES_USER:     hms
+      POSTGRES_PASSWORD: hms_pass
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hms -d hms_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5401:5432"
+
+  remotion:
+    build:
+      context: ./remotion-worker
+      dockerfile: Dockerfile
+    container_name: hms_remotion
+    restart: unless-stopped
+    environment:
+      PORT: 3100
+    volumes:
+      - /mnt/blue_442gb/CnP:/data/media
+      - shared_renders:/data/renders
+      - shared_audio:/data/audio
+    ports:
+      - "3100:3100"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3100/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: hms_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      remotion:
+        condition: service_healthy
+    environment:
+      PORT:           3000
+      PGHOST:         db
+      PGPORT:         5432
+      PGDATABASE:     hms_db
+      PGUSER:         hms
+      PGPASSWORD:     hms_pass
+      DATA_ROOT:      /data/media
+      OUTPUT_BASE:    /data/output
+      RENDER_BASE:    /data/renders
+      AUDIO_BASE:     /data/audio
+      LOG_DIR:        /data/logs
+      REMOTION_URL:   http://remotion:3100
+      FFMPEG_THREADS: 2
+    volumes:
+      - /mnt/blue_442gb/CnP:/data/media
+      - /mnt/blue_442gb/CnP/shared_output:/data/output
+      - /mnt/blue_442gb/CnP/shared_renders:/data/renders
+      - /mnt/blue_442gb/CnP/shared_audio:/data/audio
+      - /mnt/blue_442gb/CnP/shared_logs:/data/logs
+    ports:
+      - "3014:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000/status').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pg_data:
+  shared_media:
+  shared_output:
+  shared_renders:
+  shared_audio:
+  shared_logs:

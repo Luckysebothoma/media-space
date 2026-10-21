@@ -1,0 +1,67 @@
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:17:api.get('/status', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:41:api.get('/audio', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:53:api.get('/presets', (c) => c.json({
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:62:api.post('/organise', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:71:api.post('/organise/scan', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:84:api.post('/process', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:94:api.post('/process/quick/:preset', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:107:api.post('/render', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:117:api.post('/render/quick/:preset', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:127:api.post('/pipeline', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:166:api.get('/jobs', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:181:api.get('/jobs/:id', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:193:api.get('/logs', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:207:api.get('/logs/errors', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:215:api.get('/media', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/routes.js:229:api.get('/summary', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/index.js:18:app.get('/', (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/api/src/index.js:997:app.get('/doc', (c) => c.json({
+/db-server/Media_Composer_basic/hybrid-media-studio/remotion-worker/src/server.js:12:app.get('/health', (c) => c.json({ ok: true, service: 'remotion-worker' }));
+/db-server/Media_Composer_basic/hybrid-media-studio/remotion-worker/src/server.js:22:app.post('/render', async (c) => {
+/db-server/Media_Composer_basic/hybrid-media-studio/remotion-worker/src/server.js:178:app.get('/audio', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:20:app.get('/presets', (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:32:app.get('/metrics', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:38:app.get('/status', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:53:app.post('/process', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:69:app.post('/process/quick/:preset', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:82:app.post('/process/singles', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:97:app.post('/process/singles/:preset', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:123:app.get('/remotes', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:128:app.post('/remotes', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:160:app.post('/remotes/:id/mount', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:176:app.post('/remotes/:id/unmount', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:188:app.delete('/remotes/:id', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:201:app.post('/remotes/:id/process', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:223:app.get('/jobs', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:239:app.get('/jobs/:id', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:252:app.get('/logs', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:267:app.get('/logs/error-global', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/routes.js:277:app.get('/media', async (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/index.js:12:app.get('/', (c) => {
+/db-server/Media_Composer_basic/remotion_ffmpeg_stack_remote_ssh/i2v-microservice/app/src/index.js:44:app.get('/doc', (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:10:app.get('/presets', (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:19:app.get('/doc', (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:133:app.get('/status', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:147:app.post('/process/quick', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:158:app.post('/process/quick/:preset', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:174:app.post('/process', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:194:app.post('/process/folder', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:212:app.get('/jobs', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:226:app.get('/jobs/:id', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:239:app.get('/logs', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:254:app.get('/logs/error-global', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/routes.js:264:app.get('/media', async (c) => {
+/db-server/Media_Composer_basic/ffmpeg-microservice/app/src/index.js:12:app.get('/', (c) => {
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/index.ts:31:app.get("/", (c) =>
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:751:  app.get("/health", (c) => {
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:756:  app.get("/calendar", (c) => {
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:776:  app.get("/logs/recent", (c) => {
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:784:  app.get("/logs/errors", (c) => {
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:792:  app.get("/guide", (c) => {
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:809:  app.get("/scan/image", scanHandler("image"));
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:810:  app.get("/scan/video", scanHandler("video"));
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:811:  app.get("/scan/both",  scanHandler("both"));
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:817:  app.post("/dry/dump",  requireHealthyMounts, (c) => {
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:822:  app.post("/live/dump", requireHealthyMounts, (c) => {
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:865:  app.post("/dry/organize/:mediaType/:grouping",  requireHealthyMounts, organizeHandler(true));
+/db-server/Media_Composer_basic/file_management_stack/media-organizer/src/services/media-organizer.ts:866:  app.post("/live/organize/:mediaType/:grouping", requireHealthyMounts, organizeHandler(false));

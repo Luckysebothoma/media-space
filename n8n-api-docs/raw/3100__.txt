@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hybrid Media Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void:    #06060c;
+  --deep:    #0c0c18;
+  --panel:   #111120;
+  --card:    #16162a;
+  --border:  #1e1e38;
+  --border2: #2a2a50;
+  --ember:   #ff4500;
+  --ember2:  #ff7043;
+  --ice:     #00c8ff;
+  --mint:    #00e5a0;
+  --gold:    #ffc940;
+  --rose:    #ff4d8a;
+  --text:    #d8d8f5;
+  --muted:   #5a5a8a;
+  --dim:     #3a3a60;
+  --mono:    'DM Mono', monospace;
+  --sans:    'Outfit', sans-serif;
+  --display: 'Bebas Neue', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{background:var(--void);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+
+/* ── NOISE OVERLAY ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.5;
+}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:72px 260px 1fr;grid-template-rows:auto 1fr;min-height:100vh;position:relative;z-index:1}
+
+/* ── ICON RAIL ── */
+.rail{grid-row:1/3;background:var(--deep);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:.75rem 0;gap:.25rem}
+.rail-logo{font-family:var(--display);font-size:1.6rem;color:var(--ember2);letter-spacing:.05em;writing-mode:vertical-rl;transform:rotate(180deg);padding:.5rem 0 1rem;line-height:1}
+.rail-btn{width:44px;height:44px;border-radius:10px;border:1px solid transparent;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--muted);transition:all .15s;position:relative}
+.rail-btn:hover{background:var(--panel);color:var(--text);border-color:var(--border2)}
+.rail-btn.active{background:var(--card);color:var(--ember2);border-color:var(--border2)}
+.rail-btn .tooltip{position:absolute;left:56px;background:var(--card);border:1px solid var(--border2);color:var(--text);font-size:.7rem;font-family:var(--mono);padding:.25rem .5rem;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:999}
+.rail-btn:hover .tooltip{opacity:1}
+.rail-divider{width:32px;height:1px;background:var(--border);margin:.25rem 0}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--deep);border-right:1px solid var(--border);padding:1rem .85rem;overflow-y:auto;display:flex;flex-direction:column;gap:1rem}
+.sidebar-hdr{font-family:var(--mono);font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.14em;padding-left:.1rem;margin-bottom:.35rem}
+
+/* ── Status chips ── */
+.status-bar{display:flex;flex-direction:column;gap:.35rem}
+.schip{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border-radius:6px;background:var(--card);border:1px solid var(--border);font-size:.7rem;font-family:var(--mono)}
+.schip .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:var(--mint);box-shadow:0 0 6px var(--mint)}
+.dot-warn{background:var(--gold);animation:blink 1.2s infinite}
+.dot-err{background:var(--ember)}
+.dot-off{background:var(--dim)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── Preset cards ── */
+.preset-section{display:flex;flex-direction:column;gap:.3rem}
+.preset-card{border-radius:8px;padding:.65rem .75rem;border:1px solid var(--border);background:var(--card);cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.preset-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--ember);transform:scaleX(0);transform-origin:left;transition:transform .2s}
+.preset-card:hover::after,.preset-card.sel::after{transform:scaleX(1)}
+.preset-card:hover,.preset-card.sel{border-color:var(--border2);background:#1c1c32}
+.preset-card.sel{border-color:var(--ember)}
+.preset-name{font-family:var(--display);font-size:1.05rem;letter-spacing:.04em;color:var(--text)}
+.preset-sub{font-size:.62rem;font-family:var(--mono);color:var(--muted);margin-top:.1rem}
+.preset-tag{position:absolute;top:.4rem;right:.5rem;font-size:.55rem;padding:.1rem .3rem;border-radius:3px;font-family:var(--mono);font-weight:500}
+.tag-ffmpeg{background:rgba(0,200,255,.12);color:var(--ice);border:1px solid rgba(0,200,255,.2)}
+.tag-remotion{background:rgba(255,77,138,.12);color:var(--rose);border:1px solid rgba(255,77,138,.2)}
+
+/* ── Audio picker ── */
+.audio-row{display:flex;align-items:center;gap:.4rem}
+.audio-row select,.audio-row input{flex:1;background:var(--card);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:.72rem;padding:.4rem .5rem;border-radius:5px;outline:none}
+.audio-row select:focus,.audio-row input:focus{border-color:var(--ice)}
+.audio-row select option{background:var(--card)}
+.mute-toggle{display:flex;align-items:center;gap:.3rem;font-family:var(--mono);font-size:.65rem;color:var(--muted);cursor:pointer}
+.mute-toggle input{accent-color:var(--ember)}
+
+/* ── MAIN ── */
+.main{padding:1.5rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem}
+
+/* ── TOP BAR ── */
+.topbar{display:flex;align-items:center;gap:1rem;margin-bottom:.25rem}
+.page-title{font-family:var(--display);font-size:2.2rem;letter-spacing:.06em;color:var(--text);line-height:1}
+.page-title span{color:var(--ember2)}
+.topbar-actions{margin-left:auto;display:flex;gap:.5rem}
+.tbtn{background:none;border:1px solid var(--border2);color:var(--muted);padding:.3rem .75rem;border-radius:6px;cursor:pointer;font-size:.72rem;font-family:var(--mono);transition:all .15s}
+.tbtn:hover{border-color:var(--text);color:var(--text)}
+
+/* ── SECTIONS ── */
+.section{display:none}.section.visible{display:flex;flex-direction:column;gap:1rem}
+
+/* ── CARD ── */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.card-title{font-family:var(--display);font-size:1.35rem;letter-spacing:.05em;display:flex;align-items:center;gap:.5rem}
+.badge{font-family:var(--mono);font-size:.55rem;padding:.15rem .4rem;border-radius:4px;font-weight:500;letter-spacing:.06em}
+.badge-ember{background:rgba(255,69,0,.15);color:var(--ember2);border:1px solid rgba(255,69,0,.25)}
+.badge-ice{background:rgba(0,200,255,.12);color:var(--ice);border:1px solid rgba(0,200,255,.2)}
+.badge-mint{background:rgba(0,229,160,.1);color:var(--mint);border:1px solid rgba(0,229,160,.2)}
+.badge-rose{background:rgba(255,77,138,.1);color:var(--rose);border:1px solid rgba(255,77,138,.2)}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem}
+.form-grid.full{grid-template-columns:1fr}
+.field label{display:block;font-size:.62rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem}
+.field input,.field select,.field textarea{width:100%;background:var(--card);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:.76rem;padding:.5rem .7rem;border-radius:6px;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--ice)}
+.field select option{background:var(--card)}
+
+/* ── PILLS ── */
+.pills{display:flex;gap:.35rem;flex-wrap:wrap}
+.pill{padding:.3rem .8rem;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--muted);cursor:pointer;font-size:.7rem;font-family:var(--mono);transition:all .15s}
+.pill:hover{border-color:var(--text);color:var(--text)}
+.pill.active{background:rgba(0,200,255,.08);border-color:var(--ice);color:var(--ice)}
+
+/* ── LAUNCH BUTTON ── */
+.launch{width:100%;padding:.8rem;border-radius:8px;border:none;background:linear-gradient(130deg,var(--ember),var(--ember2));color:#fff;font-family:var(--display);font-size:1.3rem;letter-spacing:.08em;cursor:pointer;transition:all .2s;margin-top:.6rem;position:relative;overflow:hidden}
+.launch::before{content:'';position:absolute;inset:0;background:linear-gradient(130deg,transparent,rgba(255,255,255,.08));pointer-events:none}
+.launch:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,69,0,.4)}
+.launch:active{transform:none}
+.launch:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.launch.remotion{background:linear-gradient(130deg,#c2185b,var(--rose))}
+.launch.remotion:hover{box-shadow:0 8px 28px rgba(255,77,138,.4)}
+.launch.pipeline{background:linear-gradient(130deg,#1565c0,var(--ice))}
+.launch.pipeline:hover{box-shadow:0 8px 28px rgba(0,200,255,.35)}
+.launch.organise{background:linear-gradient(130deg,#1b5e20,var(--mint))}
+.launch.organise:hover{box-shadow:0 8px 28px rgba(0,229,160,.35)}
+
+/* ── TOAST ── */
+.toast{margin-top:.65rem;padding:.55rem .8rem;border-radius:6px;font-family:var(--mono);font-size:.72rem;display:none;word-break:break-all;line-height:1.5}
+.toast.ok{background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.25);color:var(--mint);display:block}
+.toast.err{background:rgba(255,69,0,.08);border:1px solid rgba(255,69,0,.25);color:var(--ember2);display:block}
+
+/* ── QUICK STRIP ── */
+.quick-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+.qcard{border:1px solid var(--border);background:var(--card);border-radius:10px;padding:.75rem;cursor:pointer;transition:all .18s;text-align:center;position:relative;overflow:hidden}
+.qcard:hover{transform:translateY(-2px);border-color:var(--border2)}
+.qcard .qname{font-family:var(--display);font-size:1.2rem;letter-spacing:.04em;display:block;margin-bottom:.2rem}
+.qcard .qsub{font-size:.6rem;font-family:var(--mono);color:var(--muted)}
+.qcard.q-standard:hover{border-color:var(--ice);box-shadow:0 4px 18px rgba(0,200,255,.15)}
+.qcard.q-high:hover{border-color:#a78bfa;box-shadow:0 4px 18px rgba(167,139,250,.15)}
+.qcard.q-4k:hover{border-color:var(--mint);box-shadow:0 4px 18px rgba(0,229,160,.15)}
+.qcard.q-cinematic:hover{border-color:var(--ember2);box-shadow:0 4px 18px rgba(255,112,67,.15)}
+
+/* ── JOBS TABLE ── */
+.jtable{width:100%;border-collapse:collapse}
+.jtable thead th{font-family:var(--mono);font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:.4rem .6rem;text-align:left;border-bottom:1px solid var(--border)}
+.jtable tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.jtable tbody tr:hover{background:var(--card)}
+.jtable tbody td{padding:.5rem .6rem;font-size:.76rem;font-family:var(--mono)}
+.jbadge{display:inline-flex;align-items:center;gap:.25rem;padding:.12rem .45rem;border-radius:20px;font-size:.6rem;font-weight:600;font-family:var(--mono)}
+.jbadge.running{background:rgba(255,201,64,.1);color:var(--gold);border:1px solid rgba(255,201,64,.3)}
+.jbadge.done{background:rgba(0,229,160,.1);color:var(--mint);border:1px solid rgba(0,229,160,.3)}
+.jbadge.failed{background:rgba(255,69,0,.1);color:var(--ember2);border:1px solid rgba(255,69,0,.3)}
+.jbadge.skipped{background:rgba(90,90,138,.1);color:var(--muted);border:1px solid var(--border)}
+.jbadge.pending{background:rgba(0,200,255,.1);color:var(--ice);border:1px solid rgba(0,200,255,.3)}
+.type-badge{font-size:.58rem;padding:.1rem .3rem;border-radius:3px;font-family:var(--mono);font-weight:600}
+.type-process{background:rgba(0,200,255,.1);color:var(--ice)}
+.type-render{background:rgba(255,77,138,.1);color:var(--rose)}
+.type-organise{background:rgba(0,229,160,.1);color:var(--mint)}
+.type-scan{background:rgba(90,90,138,.1);color:var(--muted)}
+.empty{text-align:center;padding:2.5rem;color:var(--muted);font-family:var(--mono);font-size:.78rem}
+
+/* ── DRAWER ── */
+.overlay{position:fixed;inset:0;background:rgba(6,6,12,.75);backdrop-filter:blur(6px);z-index:200;display:none;align-items:stretch;justify-content:flex-end}
+.overlay.open{display:flex}
+.drawer{width:min(660px,95vw);background:var(--panel);border-left:1px solid var(--border2);overflow-y:auto;padding:1.5rem;animation:slideIn .22s ease}
+@keyframes slideIn{from{transform:translateX(50px);opacity:0}to{transform:none;opacity:1}}
+.dclose{float:right;background:none;border:1px solid var(--border2);color:var(--muted);padding:.3rem .7rem;border-radius:6px;cursor:pointer;font-family:var(--mono);font-size:.72rem;margin-bottom:1rem}
+.dclose:hover{border-color:var(--ember);color:var(--ember)}
+.dgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.45rem;margin:1rem 0}
+.dcell{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:.5rem .7rem}
+.dcell .dl{font-size:.58rem;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.15rem}
+.dcell .dv{font-family:var(--mono);font-size:.78rem}
+.log-wrap{max-height:260px;overflow-y:auto;margin-top:.5rem}
+.log-row{display:flex;gap:.5rem;padding:.3rem 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.65rem;align-items:flex-start}
+.log-lvl{flex-shrink:0;padding:.08rem .3rem;border-radius:3px;font-size:.58rem;font-weight:700;min-width:34px;text-align:center}
+.lvl-info{background:rgba(0,200,255,.1);color:var(--ice)}
+.lvl-warn{background:rgba(255,201,64,.1);color:var(--gold)}
+.lvl-error{background:rgba(255,69,0,.1);color:var(--ember2)}
+.lvl-debug{background:rgba(90,90,138,.1);color:var(--muted)}
+.log-msg{color:var(--muted);flex:1;word-break:break-word}
+.log-time{color:var(--dim);flex-shrink:0;font-size:.58rem}
+
+/* ── THREAD SLIDER ── */
+.slider-row{display:flex;align-items:center;gap:.5rem}
+.slider-row input[type=range]{flex:1;accent-color:var(--ember2)}
+.slider-val{font-family:var(--mono);font-size:.72rem;color:var(--ember2);min-width:1rem;text-align:right}
+
+/* ── PIPELINE STEPS ── */
+.pipe-steps{display:flex;gap:.5rem;margin-bottom:1rem;align-items:center}
+.pipe-step{flex:1;text-align:center;padding:.5rem;border-radius:8px;border:1px solid var(--border);background:var(--card);font-family:var(--mono);font-size:.65rem;color:var(--muted);position:relative}
+.pipe-step.on{border-color:var(--ice);color:var(--ice);background:rgba(0,200,255,.05)}
+.pipe-arrow{color:var(--muted);font-size:.9rem;flex-shrink:0}
+
+/* ── FOOTER ── */
+footer{position:fixed;bottom:0;right:0;left:332px;background:var(--deep);border-top:1px solid var(--border);padding:.3rem 1.5rem;display:flex;align-items:center;gap:1rem;font-size:.62rem;font-family:var(--mono);color:var(--muted);z-index:10}
+.f-spacer{flex:1}
+#auto-ref{accent-color:var(--ember2);cursor:pointer}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ICON RAIL -->
+<nav class="rail">
+  <div class="rail-logo">HMS</div>
+  <button class="rail-btn active" id="r-home"    onclick="nav('home')"     title="Home">🏠<span class="tooltip">Dashboard</span></button>
+  <button class="rail-btn"        id="r-organise" onclick="nav('organise')" title="Organise">📁<span class="tooltip">Organise Files</span></button>
+  <button class="rail-btn"        id="r-process"  onclick="nav('process')"  title="Process">⚙️<span class="tooltip">FFmpeg Process</span></button>
+  <button class="rail-btn"        id="r-render"   onclick="nav('render')"   title="Render">🎬<span class="tooltip">Remotion Render</span></button>
+  <button class="rail-btn"        id="r-pipeline" onclick="nav('pipeline')" title="Pipeline">⚡<span class="tooltip">Full Pipeline</span></button>
+  <div class="rail-divider"></div>
+  <button class="rail-btn"        id="r-jobs"    onclick="nav('jobs')"     title="Jobs">📋<span class="tooltip">Job Queue</span></button>
+  <button class="rail-btn"        id="r-media"   onclick="nav('media')"    title="Media">🖼️<span class="tooltip">Media Library</span></button>
+  <button class="rail-btn"        id="r-logs"    onclick="nav('logs')"     title="Logs">📜<span class="tooltip">Error Logs</span></button>
+</nav>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <!-- System status -->
+  <div>
+    <div class="sidebar-hdr">System</div>
+    <div class="status-bar">
+      <div class="schip"><span class="dot dot-off" id="db-dot"></span><span id="db-lbl">DB</span><span style="margin-left:auto;color:var(--dim)" id="db-stat">—</span></div>
+      <div class="schip"><span class="dot dot-off" id="rem-dot"></span><span id="rem-lbl">Remotion</span><span style="margin-left:auto;color:var(--dim)" id="rem-stat">—</span></div>
+      <div class="schip"><span class="dot dot-ok"></span><span>Running</span><span style="margin-left:auto;color:var(--gold);font-size:.7rem" id="running-n">0</span></div>
+      <div class="schip"><span class="dot dot-ok" style="background:var(--mint)"></span><span>Done</span><span style="margin-left:auto;color:var(--mint);font-size:.7rem" id="done-n">0</span></div>
+      <div class="schip"><span class="dot dot-err"></span><span>Failed</span><span style="margin-left:auto;color:var(--ember2);font-size:.7rem" id="fail-n">0</span></div>
+    </div>
+  </div>
+
+  <!-- Active preset -->
+  <div>
+    <div class="sidebar-hdr">Active Preset</div>
+    <div class="preset-section" id="sidebar-presets">
+      <div class="preset-card sel" data-preset="standard" onclick="selectPreset('standard',this)">
+        <span class="preset-tag tag-ffmpeg">FFmpeg</span>
+        <div class="preset-name">Standard</div>
+        <div class="preset-sub">1080p · CRF23 · 5Mbps</div>
+      </div>
+      <div class="preset-card" data-preset="high" onclick="selectPreset('high',this)">
+        <span class="preset-tag tag-ffmpeg">FFmpeg</span>
+        <div class="preset-name">High</div>
+        <div class="preset-sub">1080p · CRF18 · 8Mbps</div>
+      </div>
+      <div class="preset-card" data-preset="4k" onclick="selectPreset('4k',this)">
+        <span class="preset-tag tag-ffmpeg">FFmpeg</span>
+        <div class="preset-name">4K</div>
+        <div class="preset-sub">2160p · CRF20 · 15Mbps</div>
+      </div>
+      <div class="preset-card" data-preset="cinematic" onclick="selectPreset('cinematic',this)">
+        <span class="preset-tag tag-ffmpeg">FFmpeg</span>
+        <div class="preset-name">Cinematic</div>
+        <div class="preset-sub">4096×2160 · CRF18 · 20Mbps</div>
+      </div>
+      <div class="preset-card" data-preset="cineslide" onclick="selectPreset('cineslide',this)">
+        <span class="preset-tag tag-remotion">Remotion</span>
+        <div class="preset-name">Cineslide</div>
+        <div class="preset-sub">Fade · 30fps · 1080p</div>
+      </div>
+      <div class="preset-card" data-preset="reel" onclick="selectPreset('reel',this)">
+        <span class="preset-tag tag-remotion">Remotion</span>
+        <div class="preset-name">Reel</div>
+        <div class="preset-sub">Zoom · 60fps · Vertical</div>
+      </div>
+      <div class="preset-card" data-preset="slideshow" onclick="selectPreset('slideshow',this)">
+        <span class="preset-tag tag-remotion">Remotion</span>
+        <div class="preset-name">Slideshow</div>
+        <div class="preset-sub">Slide · 24fps · No audio</div>
+      </div>
+      <div class="preset-card" data-preset="timelapse" onclick="selectPreset('timelapse',this)">
+        <span class="preset-tag tag-remotion">Remotion</span>
+        <div class="preset-name">Timelapse</div>
+        <div class="preset-sub">Cut · 4K · 0.5s/img</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <div>
+    <div class="sidebar-hdr">Audio Track</div>
+    <div class="audio-row" style="margin-bottom:.35rem">
+      <select id="audio-select" onchange="syncAudio()">
+        <option value="">— no audio —</option>
+      </select>
+    </div>
+    <label class="mute-toggle">
+      <input type="checkbox" id="mute-toggle" onchange="syncAudio()"> Mute output
+    </label>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ── DASHBOARD ── -->
+<div class="section visible" id="section-home">
+  <div class="topbar">
+    <div>
+      <div class="page-title">HYBRID<span> MEDIA</span> STUDIO</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.2rem;font-family:var(--mono)">Organise → Process → Render</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="tbtn" onclick="refreshStatus()">↻ Refresh</button>
+      <button class="tbtn" onclick="window.open('/doc','_blank')">API ↗</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">⚡ Quick Fire <span class="badge badge-ember">FFmpeg</span></div>
+      <div style="font-size:.68rem;font-family:var(--mono);color:var(--muted)">Process /data/media</div>
+    </div>
+    <div class="quick-strip">
+      <div class="qcard q-standard" onclick="quickProcess('standard')">
+        <span class="qname" style="color:var(--ice)">Standard</span>
+        <span class="qsub">1080p · CRF23</span>
+      </div>
+      <div class="qcard q-high" onclick="quickProcess('high')">
+        <span class="qname" style="color:#a78bfa">High</span>
+        <span class="qsub">1080p · CRF18</span>
+      </div>
+      <div class="qcard q-4k" onclick="quickProcess('4k')">
+        <span class="qname" style="color:var(--mint)">4K</span>
+        <span class="qsub">2160p · CRF20</span>
+      </div>
+      <div class="qcard q-cinematic" onclick="quickProcess('cinematic')">
+        <span class="qname" style="color:var(--ember2)">Cinematic</span>
+        <span class="qsub">4096×2160</span>
+      </div>
+    </div>
+    <div id="toast-quick" class="toast"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">🎬 Quick Render <span class="badge badge-rose">Remotion</span></div>
+      <div style="font-size:.68rem;font-family:var(--mono);color:var(--muted)">Animated video from /data/media</div>
+    </div>
+    <div class="quick-strip" style="grid-template-columns:repeat(4,1fr)">
+      <div class="qcard" onclick="quickRender('cineslide')" style="border-color:#3a1030">
+        <span class="qname" style="color:var(--rose)">Cineslide</span>
+        <span class="qsub">Fade · 30fps</span>
+      </div>
+      <div class="qcard" onclick="quickRender('reel')" style="border-color:#3a1030">
+        <span class="qname" style="color:var(--rose)">Reel</span>
+        <span class="qsub">Zoom · 60fps</span>
+      </div>
+      <div class="qcard" onclick="quickRender('slideshow')" style="border-color:#3a1030">
+        <span class="qname" style="color:var(--rose)">Slideshow</span>
+        <span class="qsub">Slide · 24fps</span>
+      </div>
+      <div class="qcard" onclick="quickRender('timelapse')" style="border-color:#3a1030">
+        <span class="qname" style="color:var(--rose)">Timelapse</span>
+        <span class="qsub">Cut · 4K</span>
+      </div>
+    </div>
+    <div id="toast-qrender" class="toast"></div>
+  </div>
+</div>
+
+<!-- ── ORGANISE ── -->
+<div class="section" id="section-organise">
+  <div class="topbar"><div class="page-title">ORGANISE <span>FILES</span></div></div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem">📁 Group & Deduplicate <span class="badge badge-mint">Organise</span></div>
+    <div class="form-grid">
+      <div class="field"><label>Source Directory</label><input id="org-src" type="text" value="/data/media" placeholder="/data/media"></div>
+      <div class="field"><label>Output Directory</label><input id="org-out" type="text" placeholder="/data/output/organised (auto)"></div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Media Type</label>
+        <select id="org-type">
+          <option value="both">Both (images + videos)</option>
+          <option value="image">Images only</option>
+          <option value="video">Videos only</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Group By</label>
+        <select id="org-gran">
+          <option value="day">Day (YYYYMMDD)</option>
+          <option value="hour">Hour (YYYYMMDD_HH)</option>
+          <option value="burst">Burst (YYYYMMDD_HHMM)</option>
+          <option value="month">Month (YYYYMM)</option>
+          <option value="year">Year (YYYY)</option>
+        </select>
+      </div>
+    </div>
+    <label class="mute-toggle" style="margin-bottom:.75rem">
+      <input type="checkbox" id="org-dry"> Dry run (preview only)
+    </label>
+    <button class="launch organise" onclick="doOrganise()">📁 ORGANISE FILES</button>
+    <div id="toast-org" class="toast"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem">🔍 Scan Directory</div>
+    <div class="form-grid">
+      <div class="field"><label>Directory to Scan</label><input id="scan-src" type="text" value="/data/media"></div>
+      <div class="field">
+        <label>Type</label>
+        <select id="scan-type">
+          <option value="both">Both</option>
+          <option value="image">Images</option>
+          <option value="video">Videos</option>
+        </select>
+      </div>
+    </div>
+    <button class="launch organise" onclick="doScan()">🔍 SCAN</button>
+    <div id="toast-scan" class="toast"></div>
+  </div>
+</div>
+
+<!-- ── PROCESS ── -->
+<div class="section" id="section-process">
+  <div class="topbar"><div class="page-title">FFMPEG <span>PROCESS</span></div></div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem">⚙️ Batch Image→Video <span class="badge badge-ice">FFmpeg</span></div>
+    <div class="form-grid">
+      <div class="field"><label>Source Path</label><input id="proc-src" type="text" value="/data/media"></div>
+      <div class="field">
+        <label>Preset</label>
+        <select id="proc-preset">
+          <option value="standard">Standard — 1080p CRF23</option>
+          <option value="high">High — 1080p CRF18</option>
+          <option value="4k">4K — 2160p CRF20</option>
+          <option value="cinematic">Cinematic — 4096×2160</option>
+          <option value="reel">Reel — 1080×1920 vertical</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Threads — <span id="tval">2</span></label>
+        <div class="slider-row">
+          <input type="range" min="1" max="16" value="2" id="thread-slider" oninput="document.getElementById('tval').textContent=this.value">
+        </div>
+      </div>
+      <div class="field">
+        <label>Audio (optional)</label>
+        <input id="proc-audio" type="text" placeholder="/data/audio/track.mp3 (leave blank for mute)">
+      </div>
+    </div>
+    <label class="mute-toggle" style="margin-bottom:.75rem">
+      <input type="checkbox" id="proc-mute"> Force mute (ignore audio)
+    </label>
+    <button class="launch" onclick="doProcess()">▶ LAUNCH PROCESS</button>
+    <div id="toast-proc" class="toast"></div>
+  </div>
+</div>
+
+<!-- ── RENDER ── -->
+<div class="section" id="section-render">
+  <div class="topbar"><div class="page-title">REMOTION <span>RENDER</span></div></div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:1rem">🎬 Animated Video <span class="badge badge-rose">Remotion</span></div>
+    <div class="form-grid">
+      <div class="field"><label>Source Path</label><input id="ren-src" type="text" value="/data/media"></div>
+      <div class="field">
+        <label>Render Preset</label>
+        <select id="ren-preset">
+          <option value="cineslide">Cineslide — Fade · 30fps · 1080p</option>
+          <option value="reel">Reel — Zoom · 60fps · Vertical</option>
+          <option value="slideshow">Slideshow — Slide · 24fps</option>
+          <option value="timelapse">Timelapse — Cut · 4K · 0.5s/img</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Audio File</label>
+        <input id="ren-audio" type="text" placeholder="/data/audio/track.mp3">
+      </div>
+      <div class="field">
+        <label>Transition</label>
+        <select id="ren-transition">
+          <option value="fade">Fade</option>
+          <option value="zoom">Zoom</option>
+          <option value="slide">Slide</option>
+          <option value="cut">Cut (no transition)</option>
+        </select>
+      </div>
+    </div>
+    <label class="mute-toggle" style="margin-bottom:.75rem">
+      <input type="checkbox" id="ren-mute"> Mute (no audio)
+    </label>
+    <button class="launch remotion" onclick="doRender()">🎬 RENDER VIDEO</button>
+    <div id="toast-ren" class="toast"></div>
+  </div>
+</div>
+
+<!-- ── PIPELINE ── -->
+<div class="section" id="section-pipeline">
+  <div class="topbar"><div class="page-title">FULL <span>PIPELINE</span></div></div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:.75rem">⚡ Organise → Process → Render <span class="badge badge-ember">Auto</span></div>
+    <div class="pipe-steps">
+      <div class="pipe-step on" id="ps-organise">📁 Organise</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step on" id="ps-process">⚙️ FFmpeg</div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-step on" id="ps-render">🎬 Remotion</div>
+    </div>
+    <label style="display:flex;align-items:center;gap:.5rem;font-size:.68rem;font-family:var(--mono);color:var(--muted);cursor:pointer;margin-bottom:.35rem">
+      <input type="checkbox" checked id="pipe-org" onchange="togglePipeStep('organise')"> Include Organise step
+    </label>
+    <label style="display:flex;align-items:center;gap:.5rem;font-size:.68rem;font-family:var(--mono);color:var(--muted);cursor:pointer;margin-bottom:.35rem">
+      <input type="checkbox" checked id="pipe-proc" onchange="togglePipeStep('process')"> Include FFmpeg Process step
+    </label>
+    <label style="display:flex;align-items:center;gap:.5rem;font-size:.68rem;font-family:var(--mono);color:var(--muted);cursor:pointer;margin-bottom:.75rem">
+      <input type="checkbox" checked id="pipe-ren" onchange="togglePipeStep('render')"> Include Remotion Render step
+    </label>
+    <div class="form-grid">
+      <div class="field"><label>Source Path</label><input id="pipe-src" type="text" value="/data/media"></div>
+      <div class="field"><label>Group By</label>
+        <select id="pipe-gran">
+          <option value="day">Day</option><option value="hour">Hour</option>
+          <option value="burst">Burst</option><option value="month">Month</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field"><label>FFmpeg Preset</label>
+        <select id="pipe-fpreset">
+          <option value="standard">Standard</option><option value="high">High</option>
+          <option value="4k">4K</option><option value="cinematic">Cinematic</option>
+        </select>
+      </div>
+      <div class="field"><label>Remotion Preset</label>
+        <select id="pipe-rpreset">
+          <option value="cineslide">Cineslide</option><option value="reel">Reel</option>
+          <option value="slideshow">Slideshow</option><option value="timelapse">Timelapse</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:.75rem"><label>Audio File (optional)</label>
+      <input id="pipe-audio" type="text" placeholder="/data/audio/track.mp3">
+    </div>
+    <label class="mute-toggle" style="margin-bottom:.5rem">
+      <input type="checkbox" id="pipe-dry"> Dry run
+    </label>
+    <label class="mute-toggle" style="margin-bottom:.75rem">
+      <input type="checkbox" id="pipe-mute"> Mute all outputs
+    </label>
+    <button class="launch pipeline" onclick="doPipeline()">⚡ RUN FULL PIPELINE</button>
+    <div id="toast-pipe" class="toast"></div>
+  </div>
+</div>
+
+<!-- ── JOBS ── -->
+<div class="section" id="section-jobs">
+  <div class="topbar">
+    <div class="page-title">JOB <span>QUEUE</span></div>
+    <div class="topbar-actions">
+      <div class="pills">
+        <button class="pill active" onclick="filterJobs('')"         id="jf-all">All</button>
+        <button class="pill"        onclick="filterJobs('process')"  id="jf-process">Process</button>
+        <button class="pill"        onclick="filterJobs('render')"   id="jf-render">Render</button>
+        <button class="pill"        onclick="filterJobs('organise')" id="jf-organise">Organise</button>
+      </div>
+      <button class="tbtn" onclick="loadJobs()">↻</button>
+    </div>
+  </div>
+  <div class="card">
+    <div id="jobs-wrap"></div>
+  </div>
+</div>
+
+<!-- ── MEDIA ── -->
+<div class="section" id="section-media">
+  <div class="topbar">
+    <div class="page-title">MEDIA <span>LIBRARY</span></div>
+    <div class="topbar-actions">
+      <div class="pills">
+        <button class="pill active" onclick="filterMedia('')"       id="mf-all">All</button>
+        <button class="pill"        onclick="filterMedia('image')"  id="mf-image">Images</button>
+        <button class="pill"        onclick="filterMedia('video')"  id="mf-video">Video</button>
+        <button class="pill"        onclick="filterMedia('render')" id="mf-render">Renders</button>
+      </div>
+      <button class="tbtn" onclick="loadMedia()">↻</button>
+    </div>
+  </div>
+  <div class="card"><div id="media-wrap"></div></div>
+</div>
+
+<!-- ── ERROR LOGS ── -->
+<div class="section" id="section-logs">
+  <div class="topbar">
+    <div class="page-title">ERROR <span>LOGS</span></div>
+    <div class="topbar-actions"><button class="tbtn" onclick="loadLogs()">↻</button></div>
+  </div>
+  <div class="card"><div id="logs-wrap"></div></div>
+</div>
+
+</main><!-- /main -->
+</div><!-- /layout -->
+
+<footer>
+  <span>Hybrid Media Studio v2.0</span><span>·</span>
+  <span id="ft-time"></span>
+  <span class="f-spacer"></span>
+  <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
+    <input type="checkbox" id="auto-ref" checked> Auto-refresh
+  </label>
+</footer>
+
+<!-- DRAWER -->
+<div class="overlay" id="overlay" onclick="closeDrawer(event)">
+  <div class="drawer" id="drawer">
+    <button class="dclose" onclick="forceCloseDrawer()">✕ Close</button>
+    <div id="drawer-body"></div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let activePreset   = 'standard';
+let activeAudio    = '';
+let activeMute     = false;
+let activeSection  = 'home';
+let jobFilter      = '';
+let mediaFilter    = '';
+let autoRefTick    = null;
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function nav(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-'+name)?.classList.add('visible');
+  document.getElementById('r-'+name)?.classList.add('active');
+  activeSection = name;
+  if (name==='jobs')  loadJobs();
+  if (name==='media') loadMedia();
+  if (name==='logs')  loadLogs();
+}
+
+// ── Preset selection ───────────────────────────────────────────────────────
+function selectPreset(p, el) {
+  activePreset = p;
+  document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  // sync dropdowns
+  ['proc-preset','ren-preset','pipe-fpreset','pipe-rpreset'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) [...el.options].forEach(o => { if (o.value===p) el.value=p; });
+  });
+}
+
+// ── Audio sync ─────────────────────────────────────────────────────────────
+function syncAudio() {
+  activeAudio = document.getElementById('audio-select').value;
+  activeMute  = document.getElementById('mute-toggle').checked;
+}
+
+async function loadAudioList() {
+  try {
+    const r = await fetch('/audio');
+    const d = await r.json();
+    const sel = document.getElementById('audio-select');
+    const existing = sel.innerHTML;
+    const opts = (d.audio||[]).map(a => '<option value="${a.path}">${a.name}</option>').join('');
+    sel.innerHTML = '<option value="">— no audio —</option>' + opts;
+  } catch {}
+}
+
+// ── Status refresh ─────────────────────────────────────────────────────────
+async function refreshStatus() {
+  try {
+    const r = await fetch('/status');
+    const d = await r.json();
+    const dbDot = document.getElementById('db-dot');
+    const remDot = document.getElementById('rem-dot');
+    if (d.ok) { dbDot.className='dot dot-ok'; document.getElementById('db-lbl').textContent='DB'; }
+    else { dbDot.className='dot dot-err'; document.getElementById('db-lbl').textContent='DB ERR'; }
+    if (d.remotion==='connected') { remDot.className='dot dot-ok'; document.getElementById('rem-lbl').textContent='Remotion'; }
+    else { remDot.className='dot dot-warn'; document.getElementById('rem-lbl').textContent='Remotion'; }
+    const s = d.stats || {};
+    document.getElementById('running-n').textContent = s.running||0;
+    document.getElementById('done-n').textContent    = s.done||0;
+    document.getElementById('fail-n').textContent    = s.failed||0;
+  } catch { document.getElementById('db-dot').className='dot dot-err'; }
+}
+
+// ── Toast helper ───────────────────────────────────────────────────────────
+function toast(id, type, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'toast '+type;
+  el.textContent = msg;
+  setTimeout(() => { el.style.display='none'; }, 8000);
+}
+
+// ── Quick actions ──────────────────────────────────────────────────────────
+async function quickProcess(preset) {
+  try {
+    const r = await fetch('/process/quick/${preset}', { method:'POST' });
+    const d = await r.json();
+    if (d.jobId) toast('toast-quick','ok','✓ Process job started — ${d.jobId.slice(0,8)}…');
+    else toast('toast-quick','err','✗ '+d.error);
+    refreshStatus();
+  } catch(e) { toast('toast-quick','err','✗ '+e.message); }
+}
+
+async function quickRender(preset) {
+  try {
+    const r = await fetch('/render/quick/${preset}', { method:'POST' });
+    const d = await r.json();
+    if (d.jobId) toast('toast-qrender','ok','✓ Render job started — ${d.jobId.slice(0,8)}…');
+    else toast('toast-qrender','err','✗ '+d.error);
+    refreshStatus();
+  } catch(e) { toast('toast-qrender','err','✗ '+e.message); }
+}
+
+// ── Organise ───────────────────────────────────────────────────────────────
+async function doOrganise() {
+  const body = {
+    srcPath:     document.getElementById('org-src').value.trim(),
+    outputDir:   document.getElementById('org-out').value.trim() || undefined,
+    mediaType:   document.getElementById('org-type').value,
+    granularity: document.getElementById('org-gran').value,
+    dryRun:      document.getElementById('org-dry').checked,
+  };
+  try {
+    const r = await fetch('/organise', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const d = await r.json();
+    if (d.jobId) toast('toast-org','ok','✓ Organise started (jobId: ${d.jobId.slice(0,8)}…)');
+    else toast('toast-org','err','✗ '+(d.error||JSON.stringify(d)));
+    refreshStatus();
+  } catch(e) { toast('toast-org','err','✗ '+e.message); }
+}
+
+async function doScan() {
+  const body = { srcPath: document.getElementById('scan-src').value.trim(), mediaType: document.getElementById('scan-type').value };
+  try {
+    const r = await fetch('/organise/scan', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const d = await r.json();
+    toast('toast-scan','ok','Scanned: ${d.totalFiles} files · ${d.totalHuman} · 🖼 ${d.byType?.image||0} images · 🎬 ${d.byType?.video||0} videos');
+  } catch(e) { toast('toast-scan','err','✗ '+e.message); }
+}
+
+// ── Process ────────────────────────────────────────────────────────────────
+async function doProcess() {
+  const body = {
+    srcPath:   document.getElementById('proc-src').value.trim(),
+    preset:    document.getElementById('proc-preset').value,
+    threads:   parseInt(document.getElementById('thread-slider').value),
+    audioPath: document.getElementById('proc-audio').value.trim() || null,
+    muted:     document.getElementById('proc-mute').checked,
+  };
+  try {
+    const r = await fetch('/process', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const d = await r.json();
+    if (d.jobId) toast('toast-proc','ok','✓ Process job started — ${d.jobId.slice(0,8)}…');
+    else toast('toast-proc','err','✗ '+d.error);
+    refreshStatus();
+  } catch(e) { toast('toast-proc','err','✗ '+e.message); }
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+async function doRender() {
+  const body = {
+    srcPath:   document.getElementById('ren-src').value.trim(),
+    preset:    document.getElementById('ren-preset').value,
+    audioPath: document.getElementById('ren-audio').value.trim() || activeAudio || null,
+    muted:     document.getElementById('ren-mute').checked || activeMute,
+    options:   { transition: document.getElementById('ren-transition').value },
+  };
+  try {
+    const r = await fetch('/render', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const d = await r.json();
+    if (d.jobId) toast('toast-ren','ok','✓ Render job started — ${d.jobId.slice(0,8)}…');
+    else toast('toast-ren','err','✗ '+d.error);
+    refreshStatus();
+  } catch(e) { toast('toast-ren','err','✗ '+e.message); }
+}
+
+// ── Pipeline ───────────────────────────────────────────────────────────────
+function togglePipeStep(step) {
+  const on = document.getElementById('pipe-'+step.slice(0,3)).checked;
+  document.getElementById('ps-'+step).classList.toggle('on', on);
+}
+
+async function doPipeline() {
+  const body = {
+    srcPath:       document.getElementById('pipe-src').value.trim(),
+    granularity:   document.getElementById('pipe-gran').value,
+    ffmpegPreset:  document.getElementById('pipe-fpreset').value,
+    remotionPreset:document.getElementById('pipe-rpreset').value,
+    audioPath:     document.getElementById('pipe-audio').value.trim() || null,
+    dryRun:        document.getElementById('pipe-dry').checked,
+    muted:         document.getElementById('pipe-mute').checked,
+    skipOrganise:  !document.getElementById('pipe-org').checked,
+    skipProcess:   !document.getElementById('pipe-proc').checked,
+    skipRender:    !document.getElementById('pipe-ren').checked,
+  };
+  try {
+    const r = await fetch('/pipeline', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const d = await r.json();
+    if (d.ok) toast('toast-pipe','ok','✓ Pipeline launched — ${d.pipeline.length} step(s) queued');
+    else toast('toast-pipe','err','✗ '+(d.error||'Pipeline error'));
+    refreshStatus();
+  } catch(e) { toast('toast-pipe','err','✗ '+e.message); }
+}
+
+// ── Jobs ───────────────────────────────────────────────────────────────────
+let _jf = '';
+function filterJobs(type) {
+  _jf = type;
+  ['all','process','render','organise'].forEach(t => {
+    document.getElementById('jf-'+t)?.classList.toggle('active', (t==='all'&&!type)||(t===type));
+  });
+  loadJobs();
+}
+
+async function loadJobs() {
+  const wrap = document.getElementById('jobs-wrap');
+  wrap.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const url = '/jobs?limit=100' + (_jf ? '&type='+_jf : '');
+    const d = await (await fetch(url)).json();
+    if (!d.jobs?.length) { wrap.innerHTML = '<div class="empty">No jobs found</div>'; return; }
+    const rows = d.jobs.map(j => {
+      const dur = j.finished_at && j.started_at
+        ? Math.round((new Date(j.finished_at)-new Date(j.started_at))/1000)+'s' : '—';
+      return '<tr onclick="openJob('${j.id}')">
+        <td style="color:var(--dim)">${j.id.slice(0,8)}…</td>
+        <td><span class="jbadge ${j.status}">${j.status}</span></td>
+        <td><span class="type-badge type-${j.job_type}">${j.job_type}</span></td>
+        <td>${j.preset}</td>
+        <td style="color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.src_path}</td>
+        <td>${j.total_files||0}</td>
+        <td>${j.size_mb||0}mb</td>
+        <td style="color:var(--dim)">${dur}</td>
+      </tr>';
+    }).join('');
+    wrap.innerHTML = '<table class="jtable">
+      <thead><tr><th>ID</th><th>Status</th><th>Type</th><th>Preset</th><th>Path</th><th>Files</th><th>Size</th><th>Time</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>';
+  } catch(e) { wrap.innerHTML = '<div class="empty" style="color:var(--ember2)">Error: ${e.message}</div>'; }
+}
+
+async function openJob(id) {
+  const overlay = document.getElementById('overlay');
+  const body    = document.getElementById('drawer-body');
+  overlay.classList.add('open');
+  body.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const d = await (await fetch('/jobs/'+id)).json();
+    const j = d.job;
+    const dur = j.finished_at && j.started_at ? Math.round((new Date(j.finished_at)-new Date(j.started_at))/1000)+'s' : 'running';
+    const logRows = (d.logs||[]).map(l => '<div class="log-row">
+      <span class="log-lvl lvl-${l.level}">${l.level}</span>
+      <span class="log-msg">${l.message}</span>
+      <span class="log-time">${new Date(l.created_at).toLocaleTimeString()}</span>
+    </div>').join('');
+    body.innerHTML = '
+      <div style="font-size:.62rem;font-family:var(--mono);color:var(--muted);margin-bottom:.4rem">${j.id}</div>
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem">
+        <div style="font-family:var(--display);font-size:1.5rem">${j.folder_name||j.src_path}</div>
+        <span class="jbadge ${j.status}">${j.status}</span>
+        <span class="type-badge type-${j.job_type}">${j.job_type}</span>
+      </div>
+      <div class="dgrid">
+        <div class="dcell"><div class="dl">Preset</div><div class="dv">${j.preset}</div></div>
+        <div class="dcell"><div class="dl">Duration</div><div class="dv">${dur}</div></div>
+        <div class="dcell"><div class="dl">Files</div><div class="dv">${j.total_files||0}</div></div>
+        <div class="dcell"><div class="dl">Size</div><div class="dv">${j.size_mb||0} MB</div></div>
+        <div class="dcell"><div class="dl">Video sec</div><div class="dv">${j.duration_sec||0}s</div></div>
+        <div class="dcell"><div class="dl">Threads</div><div class="dv">${j.threads||'—'}</div></div>
+      </div>
+      ${j.output_path?'<div style="background:rgba(0,229,160,.05);border:1px solid rgba(0,229,160,.15);border-radius:6px;padding:.5rem .75rem;font-family:var(--mono);font-size:.68rem;color:var(--mint);margin-bottom:.75rem">📦 ${j.output_path}</div>':''}
+      ${j.error_msg?'<div style="background:rgba(255,69,0,.05);border:1px solid rgba(255,69,0,.15);border-radius:6px;padding:.5rem .75rem;font-family:var(--mono);font-size:.68rem;color:var(--ember2);margin-bottom:.75rem">✗ ${j.error_msg}</div>':''}
+      <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Logs (${d.logs?.length||0})</div>
+      <div class="log-wrap">${logRows||'<div style="padding:1rem;text-align:center;color:var(--muted);font-size:.72rem">No logs</div>'}</div>
+    ';
+  } catch(e) { body.innerHTML = '<div class="empty" style="color:var(--ember2)">Error: ${e.message}</div>'; }
+}
+
+function closeDrawer(e) { if (e.target===document.getElementById('overlay')) forceCloseDrawer(); }
+function forceCloseDrawer() { document.getElementById('overlay').classList.remove('open'); }
+
+// ── Media ──────────────────────────────────────────────────────────────────
+let _mf = '';
+function filterMedia(type) {
+  _mf = type;
+  ['all','image','video','render'].forEach(t => {
+    document.getElementById('mf-'+t)?.classList.toggle('active', (t==='all'&&!type)||(t===type));
+  });
+  loadMedia();
+}
+
+async function loadMedia() {
+  const wrap = document.getElementById('media-wrap');
+  wrap.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const url = '/media?limit=200' + (_mf ? '&type='+_mf : '');
+    const d = await (await fetch(url)).json();
+    if (!d.media?.length) { wrap.innerHTML = '<div class="empty">No media tracked yet</div>'; return; }
+    const rows = d.media.map(m => '<tr>
+      <td><span class="type-badge type-${m.media_type==='render'?'render':m.media_type==='video'?'render':'organise'}">${m.media_type}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.file_name||'—'}</td>
+      <td style="color:var(--muted)">${m.folder_name||'—'}</td>
+      <td>${m.size_bytes?(m.size_bytes/1024/1024).toFixed(1)+' MB':'—'}</td>
+      <td style="color:var(--dim)">${new Date(m.created_at).toLocaleString()}</td>
+    </tr>').join('');
+    wrap.innerHTML = '<table class="jtable">
+      <thead><tr><th>Type</th><th>File</th><th>Folder</th><th>Size</th><th>Created</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>';
+  } catch(e) { wrap.innerHTML = '<div class="empty" style="color:var(--ember2)">Error: ${e.message}</div>'; }
+}
+
+// ── Error Logs ─────────────────────────────────────────────────────────────
+async function loadLogs() {
+  const wrap = document.getElementById('logs-wrap');
+  wrap.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const d = await (await fetch('/logs/errors?limit=100')).json();
+    if (!d.errors?.length) { wrap.innerHTML = '<div class="empty" style="color:var(--mint)">✓ No errors logged</div>'; return; }
+    const rows = d.errors.map(e => '<tr>
+      <td style="color:var(--muted)">${new Date(e.created_at).toLocaleString()}</td>
+      <td style="color:var(--dim)">${e.job_id?.slice(0,8)||'—'}…</td>
+      <td><span class="type-badge type-${e.job_type||'scan'}">${e.job_type||'—'}</span></td>
+      <td style="color:var(--muted)">${e.folder_name||'—'}</td>
+      <td style="color:var(--ember2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.message}</td>
+    </tr>').join('');
+    wrap.innerHTML = '<table class="jtable">
+      <thead><tr><th>Time</th><th>Job</th><th>Type</th><th>Folder</th><th>Message</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>';
+  } catch(e) { wrap.innerHTML = '<div class="empty" style="color:var(--ember2)">Error: ${e.message}</div>'; }
+}
+
+// ── Clock + auto-refresh ───────────────────────────────────────────────────
+function startAuto() {
+  autoRefTick = setInterval(() => {
+    refreshStatus();
+    if (activeSection==='jobs')  loadJobs();
+    if (activeSection==='media') loadMedia();
+  }, 6000);
+}
+document.getElementById('auto-ref').addEventListener('change', function() {
+  if (this.checked) startAuto(); else clearInterval(autoRefTick);
+});
+setInterval(() => { document.getElementById('ft-time').textContent = new Date().toLocaleTimeString(); }, 1000);
+
+// ── Init ───────────────────────────────────────────────────────────────────
+refreshStatus();
+loadAudioList();
+startAuto();
+document.getElementById('ft-time').textContent = new Date().toLocaleTimeString();
+</script>
+</body>
+</html>

@@ -67,11 +67,14 @@ services:
       PROCESSED_DIR: /media/processed
       TMP_DIR: /media/tmp
     ports:
-      - { target: "${APP_PORT}", published: "${APP_PORT}", protocol: tcp, mode: ingress }
+      - { target: "${APP_PORT}",   published: "${APP_PORT}",   protocol: tcp, mode: ingress }
+      - { target: "${APP_PORT_1}", published: "${APP_PORT_1}", protocol: tcp, mode: ingress }
+      - { target: "${APP_PORT_2}", published: "${APP_PORT_2}", protocol: tcp, mode: ingress }
+      - { target: "${APP_PORT_3}", published: "${APP_PORT_3}", protocol: tcp, mode: ingress }
     volumes:
-      - { type: bind,   source: "${HOST_DATA_DIR}/input",     target: /media/input }
-      - { type: bind,   source: "${HOST_DATA_DIR}/processed", target: /media/processed }
-      - { type: bind,   source: "${HOST_DATA_DIR}/tmp",       target: /media/tmp }
+      - { type: bind,   source: "${HOST_INPUT_DIR}",         target: /media/input }
+      - { type: bind,   source: "${HOST_PROCESSED_DIR}", target: /media/processed }
+      - { type: bind,   source: "${HOST_TMP_DIR}",       target: /media/tmp }
       - { type: volume, source: shared_assets,                target: /app/shared_assets }
       - { type: tmpfs,  target: /dev/shm, tmpfs: { size: 4294967296 } }
     networks: [media_space_net]
